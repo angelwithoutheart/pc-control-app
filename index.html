@@ -2,67 +2,129 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PC Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PC Remote Control</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Простой стиль, чтобы кнопки выглядели прилично и были темными */
+        :root {
+            --bg-color: #1c1c1d;
+            --button-blue: #248bcf;
+            --button-red: #eb4d4b;
+            --button-green: #6ab04c;
+            --text-color: #ffffff;
+        }
+
         body {
-            font-family: sans-serif;
-            background-color: #1c1c1d;
-            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
+            user-select: none;
         }
-        h1 { font-size: 1.5rem; margin-bottom: 20px; }
+
+        h1 {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #aaa;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
         button {
-            width: 80%;
-            padding: 15px;
-            margin: 10px 0;
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 12px;
             border: none;
             border-radius: 12px;
-            background-color: #248bcf; /* Цвет Telegram */
+            background-color: var(--button-blue);
             color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
+            font-size: 1.1rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: transform 0.1s, opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
+
         button:active {
-            background-color: #1a6b9e; /* Цвет при нажатии */
+            transform: scale(0.97);
+            opacity: 0.8;
         }
-        .btn-scr { background-color: #31b54a; } /* Зеленая для скриншота */
-        .btn-vol-down { background-color: #fca311; } /* Оранжевая */
+
+        .btn-scr { background-color: var(--button-green); }
+        .btn-shutdown { 
+            background-color: transparent; 
+            border: 2px solid var(--button-red);
+            color: var(--button-red);
+            margin-top: 20px;
+        }
+
+        .status-text {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
     <h1>Управление ПК</h1>
 
-    <button class="btn-scr" onclick="sendDataToBot('screenshot')">📸 Скриншот</button>
-    <button onclick="sendDataToBot('volume_up')">🔊 Громче</button>
-    <button class="btn-vol-down" onclick="sendDataToBot('volume_down')">🔉 Тише</button>
+    <div class="container">
+        <button class="btn-scr" onclick="sendCmd('screenshot')">
+            📸 Сделать скриншот
+        </button>
+        
+        <button onclick="sendCmd('volume_up')">
+            🔊 Прибавить звук
+        </button>
+        
+        <button onclick="sendCmd('volume_down')">
+            🔉 Убавить звук
+        </button>
+
+        <button class="btn-shutdown" onclick="sendCmd('shutdown')">
+            🔌 Выключить компьютер
+        </button>
+    </div>
+
+    <p class="status-text">Бот должен быть запущен на ПК</p>
 
     <script>
-        // Инициализируем объект Telegram WebApp
+        // Инициализация Telegram WebApp
         const tg = window.Telegram.WebApp;
-
-        // Сообщаем Telegram, что приложение готово и его можно показать
+        
+        // Сообщаем Telegram, что приложение готово
         tg.ready();
-        // Разворачиваем приложение на всю высоту
+        // Разворачиваем на весь экран
         tg.expand();
 
-        // Функция, которая срабатывает при нажатии на кнопку
-        function sendDataToBot(command) {
-            // Самая главная функция: отправляет текст обратно боту
+        // Настройка цветов темы из Telegram (автоматически)
+        document.body.style.backgroundColor = tg.backgroundColor || '#1c1c1d';
+
+        function sendCmd(command) {
+            // Легкая вибрация при нажатии (Haptic Feedback)
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+
+            // ОТПРАВКА ДАННЫХ БОТУ
+            // Важно: tg.sendData работает только если Mini App 
+            // открыт через Menu Button (синяя кнопка слева от ввода)
             tg.sendData(command);
             
-            // Опционально: закрыть Mini App после нажатия
-            // tg.close(); 
+            // Закрываем окно после отправки (по желанию)
+            // tg.close();
         }
     </script>
 </body>
